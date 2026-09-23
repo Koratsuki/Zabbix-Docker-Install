@@ -1,0 +1,93 @@
+---
+services:
+  pgsql-server:
+    image: postgres:18-alpine
+    container_name: zabbix-pgsql
+    restart: unless-stopped
+    shm_size: 512mb
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    env_file: ./config/pgsql.env
+    volumes:
+      - ./data/pgsql:/var/lib/postgresql
+      - ./config/postgres.conf:/etc/postgresql/postgresql.conf:ro
+      - ./config/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+      - ./config/initdb.d:/docker-entrypoint-initdb.d:ro
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    ports:
+      - 127.0.0.1:5432:5432
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+        reservations:
+          memory: 1G
+    networks:
+      - zbx_net
+
+  zabbix-server:
+    image: zabbix/zabbix-server-pgsql:7.4-alpine-latest
+    container_name: zabbix-server
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    env_file: ./config/zabbix-server.env
+    depends_on:
+      pgsql-server:
+        condition: service_healthy
+    ports:
+      - "10051:10051"
+    networks:
+      - zbx_net
+
+  zabbix-agent:
+    image: zabbix/zabbix-agent:7.4-alpine-latest
+    container_name: zabbix-agent
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    env_file: ./config/zabbix-agent.env
+    depends_on:
+      - zabbix-server
+    ports:
+      - "10050:10050"
+    networks:
+      - zbx_net
+
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-pgsql:7.4-alpine-latest
+    container_name: zabbix-web
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    env_file: ./config/zabbix-web.env
+    depends_on:
+      pgsql-server:
+        condition: service_healthy
+      zabbix-server:
+        condition: service_started
+    ports:
+      - 127.0.0.1:8080:8080
+    networks:
+      - zbx_net
+
+networks:
+  zbx_net:
