@@ -34,7 +34,7 @@ Plataforma de monitorización **Zabbix 7.4** desplegada con Docker Compose sobre
         │                     │  │ agent      │◀─┐   │
         │   ┌────────────┐    │  │ :10050     │  │   │
         │   │  zabbix-   │◀───│  └────────────┘  │   │
-        │   │  web (nginx)│    │       ▲ self-    │   │
+        │   │ web (nginx)│    │       ▲ self-    │   │
         │   │  :8080     │    │       │ monitor  │   │
         │   └─────┬──────┘    └───────┴──────────┘   │
         └─────────┼──────────────────────────────────┘
