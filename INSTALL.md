@@ -1,7 +1,7 @@
 # INSTALL — Instalación de Zabbix (contenedores Docker) sobre Ubuntu
 
 Guía paso a paso para desplegar el stack **Zabbix 7.4 + PostgreSQL 18** con
-Docker Compose. Referencia del entorno de producción incluida: host
+Docker Compose. Referencia del entorno de pruebas incluida: host
 `zabbix-01` (192.168.20.105), Ubuntu 26.04 LTS.
 
 ---
